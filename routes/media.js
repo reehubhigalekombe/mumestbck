@@ -1,6 +1,5 @@
-const router = express.Router();
 const express = require("express");
-const mongoose = require("mongoose");
+const router = express.Router();
 const Media = require("../models/Media")
 
 router.get("/api/media", async (req, res) => {
