@@ -33,6 +33,8 @@ const mongoose = require("mongoose");
         required: true
         
     },
+    resetToken: String,
+    resetTokenExpiry: Date
 }, {timestamps: true})
 
 module.exports = mongoose.model("User", UserSchema)
