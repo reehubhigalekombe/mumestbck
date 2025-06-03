@@ -26,7 +26,7 @@ const mongoose = require("mongoose");
     email: {
         type: String,
         required: true,
-        unique: true,
+
     },
     password: {
         type: String,

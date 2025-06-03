@@ -6,7 +6,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User")
 const {authenticateToken} = require("../middleware/authMiddleware");
 const nodemailer = require("nodemailer")
-const crypto = require("crypto")
+const crypto = require("crypto");
+const Submission = require("../models/Submission");
 
 router.post("/signup", async (req, res) => {
     try {
@@ -130,6 +131,45 @@ router.post("/reset-password/:token", async (req, res) => {
     }catch(err) {
         res.status(500).json({message: " failed to reset your password, try again"})
     }
-})
+});
+
+router.post("/submission", async (req, res) => {
+     const {fullName, email, phoneNumber, subject, textarea} = req.body;
+    try {
+       
+        const newSubmission = new Submission({
+            fullName, 
+            email, 
+            phoneNumber, 
+            subject, 
+            textarea
+        });
+        await newSubmission.save();
+
+        const transporter = nodemailer.createTransport({
+            service: "Gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS
+            }
+        })
+        const mailOptions = {
+            from: email.user,
+            to: process.env.EMAIL_USER,
+            text: `
+            New message from ${fullName}
+            Email: ${email}
+            Phone: ${phoneNumber}
+            subject: ${subject}
+            Message: ${textarea}
+           `
+        }
+        await transporter.sendMail(mailOptions)
+        res.status(200).json({message: "Message Send"})
+    }catch(err) {
+        console.log("Failed to send Message", err)
+        res.status(500).json({message: "Server error"})
+    }
+} )
 
 module.exports = router
