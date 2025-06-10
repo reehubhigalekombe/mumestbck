@@ -7,7 +7,9 @@ const User = require("../models/User")
 const {authenticateToken} = require("../middleware/authMiddleware");
 const nodemailer = require("nodemailer")
 const crypto = require("crypto");
+const Student = require("../models/Student")
 const Submission = require("../models/Submission");
+
 
 router.post("/signup", async (req, res) => {
     try {
@@ -170,6 +172,23 @@ router.post("/submission", async (req, res) => {
         console.log("Failed to send Message", err)
         res.status(500).json({message: "Server error"})
     }
-} )
+} );
+
+router.post("/student", async(req, res) => {
+    const{ firstName, middleName, lastName, gender, nationalId, phoneNumber, email, postalAddress, postalCode, location,
+         bankName, accountName, accountNumber } = req.body;
+    try {
+    const newStudent = new Student({
+          firstName, middleName, lastName, gender,nationalId, phoneNumber, email, postalAddress, 
+          postalCode, location, bankName, accountName, accountNumber
+    });
+    await newStudent.save();
+    res.status(200).json({message: 'Form submitted Successfully'})
+    }catch(err) {
+        console.log("Form submission failed:", err)
+        res.status(500).json({message: "Server error"})
+    }
+})
 
 module.exports = router
+ 
