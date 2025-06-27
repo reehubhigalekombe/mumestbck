@@ -3,7 +3,9 @@ const express = require("express")
 const connectDB = require("./db")
 const cors = require("cors");
 const authRoutes = require("./routes/auth");
-const path = require("path")
+const path = require("path");
+const bodyParser = require("body-parser");
+const {stkPush} = require("./mpesa/stkPush");
 
 const app = express();
 
@@ -16,8 +18,12 @@ app.use(cors({
     Credentials: true,
 }
 ))
+app.use(express.json());
+app.use(bodyParser.json())
 
-app.use(express.json())
+app.post("/api/stkPush", stkPush)
+
+
 app.use("/api/auth", authRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")))
 app.get("/", (req, res) => {
