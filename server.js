@@ -5,7 +5,8 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth");
 const path = require("path");
 const bodyParser = require("body-parser");
-const {stkPush} = require("./mpesa/stkPush");
+const mpesaRoutes = require("./routes/mympesa")
+
 
 const app = express();
 
@@ -21,10 +22,10 @@ app.use(cors({
 app.use(express.json());
 app.use(bodyParser.json())
 
-app.post("/api/stkPush", stkPush)
 
 
 app.use("/api/auth", authRoutes);
+app.use("/api/mympesa", mpesaRoutes)
 app.use("/uploads", express.static(path.join(__dirname, "public/uploads")))
 app.get("/", (req, res) => {
     res.send({message: "Hello Higal the Backend Server is connected"})
