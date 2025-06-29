@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const router = express.Router();
 require("dotenv").config();
+const Mytransaction = require("../models/mytransaction")
 
  const getToken = async () => {
     const url =  "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
@@ -45,9 +46,19 @@ require("dotenv").config();
                 }
             }
         ); 
-        res.status(200).json({
-            message: "STK push has been initiated", data: response.data
-        });
+        
+    const {MerchantRequestID, CheckoutRequestID} = response.data;
+    await Mytransaction.create({
+        checkoutRequestId: CheckoutRequestID,
+        merchantRequestId: MerchantRequestID,
+        phone,
+        amount,
+        status: "Pending"
+    });
+    res.status(200).json({
+        message: "The STK Push has been initiated",
+        data: response.data
+    })
 
     }catch(error) {
         console.error("STK push error", error.response?.data || error.message);
@@ -57,9 +68,32 @@ require("dotenv").config();
 
 
 router.post("/callback", async (req, res) => {
-    console.log("Recieved a safaricom callback");
-    console.log(JSON.stringify(req.body, null, 2));
-    res.status(200).json({message: "Callback recieved"})
+    const cb = req.body.Body.stkCallback;
+    const checkoutRequestId = cb.CheckoutRequestID;
+    const resultCode = cb.ResultCode;
+    const resultDesc = cb.ResultDesc;
+
+    const items = cb.CallbackMetadata?.Item || [];
+    const amount = items.find(i => i.Name === "Amount")?.Value;
+    const phone = items.find(i => i.Name === "PhoneNumber")?.Value;
+
+    await Mytransaction.findOneAndUpdate(
+        {checkoutRequestId}, 
+        {
+            status: resultCode === 0 ? "Success" : "Failed",
+            resultDesc,
+            rawCallback: JSON.stringify(req.body)
+        }
+    );
+    console.log(`Mytransaction ${checkoutRequestId} updated: ${resultDesc}`)
+    res.status(200).json({message: "Callback received"})
+})
+
+router.get("/status/:checkoutRequestId", async (req, res) => {
+    const {checkoutRequestId} = req.params;
+    const tx  = await Mytransaction.findOne({checkoutRequestId});
+    if (!tx) return res.status(400).json({error: "Transcation not found"})
+        res.json({status: tx.status, resultDesc: tx.resultDesc})
 })
 
 module.exports = router;
