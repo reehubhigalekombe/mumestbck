@@ -15,8 +15,8 @@ connectDB()
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: "http://localhost:3000",
-    Credentials: true,
+    origin: "https://higalmumias.onrender.com",
+    credentials: true,
 }
 ))
 app.use(express.json());
