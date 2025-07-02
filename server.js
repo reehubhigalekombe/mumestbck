@@ -15,7 +15,7 @@ connectDB()
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: "https://higalmumias.onrender.com",
+    origin: "https://higalekombemes.onrender.com",
     credentials: true,
 }
 ))
